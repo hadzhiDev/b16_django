@@ -74,6 +74,7 @@ class Movie(models.Model):
     is_published = models.BooleanField(
         default=False
     )
+    budget = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
         verbose_name = 'Фильм'
