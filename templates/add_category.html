@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добавить категорию</title>
+    <link rel="stylesheet" href="{% static 'category_form.css' %}">
+
+</head>
+
+<body>
+
+
+<h2>Добавить категорию</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <!-- {{form.as_p}} -->
+    {{form.name}}
+    {{form.slug}}
+    <button type="submit">Сохранить</button>
+</form>
+
+</body>
+</html>

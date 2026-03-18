@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+    <link rel="stylesheet" href="{% static 'movie_detail.css' %}">
+    <link rel="stylesheet" href="{% static 'movie_form.css' %}">
+    <title>Главная страница</title>
+</head>
+<body>
+
+    {% include "components/header.html" %}
+
+    <main>
+        {% block nurlullo %}
+        
+        {% endblock %}
+    </main>
+
+    {% include "components/footer.html" %}
+</body>
+</html>

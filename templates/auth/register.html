@@ -1,0 +1,22 @@
+
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="{% static 'register_css.css' %}">
+</head>
+<body>
+
+<h2>Регистрация</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <input name="username" placeholder="Username">
+    <input name="password" type="password" placeholder="Password">
+    <input name="confirm_password" type="password" placeholder="Confirm Password">
+    <button type="submit">Регистрация</button>
+
+</body>
+</html>

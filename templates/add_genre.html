@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добавить жанр</title>
+    <link rel="stylesheet" href="{% static 'genre_form.css' %}">
+</head>
+<body>
+
+<h2>Добавить жанр</h2>
+<form method="post">
+    {% csrf_token %}
+    <!-- {{form.as_p}} -->
+    {{form.name}}
+
+    <button type="submit">Сохранить</button>
+
+</body>
+</html>

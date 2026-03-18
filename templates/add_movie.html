@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %} {% load custom_tags %}
+
+{% get_categories as categories %} {% endcomment %}
+
+
+{% block nurlullo %}
+
+<h2>{% if is_edit %}Изменить фильм{% else %}Добавить фильм{% endif %}</h2>
+
+<form method="post" enctype="multipart/form-data" class="movie_form">
+    {% csrf_token %}
+    {{ form.as_div }}
+
+    <button type="submit">{% if is_edit %}Обновить{% else %}Сохранить{% endif %}</button>
+</form>
+
+{% endblock nurlullo %}
