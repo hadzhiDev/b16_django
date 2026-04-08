@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Category(models.Model):
     name = models.CharField(verbose_name='Название категории', max_length=30, unique=True)
     slug = models.SlugField(verbose_name='Слаг', max_length=40, unique=True)
@@ -44,6 +43,7 @@ class Movie(models.Model):
     )
     directed_by = models.CharField(
         verbose_name='Режисер',
+        
     )
     age_rating = models.CharField(
         verbose_name='Возраст',
