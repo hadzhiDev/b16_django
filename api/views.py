@@ -1,23 +1,39 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.generics import (
+    CreateAPIView, ListCreateAPIView,
+    ListAPIView, GenericAPIView,
+    DestroyAPIView, RetrieveDestroyAPIView,
+    RetrieveAPIView, RetrieveUpdateAPIView,
+    UpdateAPIView, RetrieveUpdateDestroyAPIView
+)
 
 from .serializers import MovieModelSerializer, MovieSerializer, CategoryModelSerializer, GenreModelSerializer
 from catalog.models import Movie, Genre, Category
 
 
-@api_view(["GET", "POST"])
-def movies_list(request):
-    if request.method == "GET":
-        movies_list = Movie.objects.all()
-        serializer = MovieModelSerializer(movies_list, many=True)
-        return Response(serializer.data)
-    elif request.method == "POST":
-        serializer = MovieModelSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        print(serializer.errors)
-        return Response(serializer.errors, status=400)
+class MovieListCreateAPIView(ListCreateAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
+
+# @api_view(["GET", "POST"])
+# def movies_list(request):
+#     if request.method == "GET":
+#         movies_list = Movie.objects.all()
+#         serializer = MovieModelSerializer(movies_list, many=True)
+#         return Response(serializer.data)
+#     elif request.method == "POST":
+#         serializer = MovieModelSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=201)
+#         print(serializer.errors)
+#         return Response(serializer.errors, status=400)
+
+class MoviewRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieModelSerializer
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -48,7 +64,7 @@ def movie_detail(request, pk):
 def categories_list(request):
     if request.method == "GET":
         categories_list = Category.objects.all()
-        serializer = CategoryModelSerializer(movies_list, many=True)
+        serializer = CategoryModelSerializer(categories_list, many=True)
         return Response(serializer.data)
     elif request.method == "POST":
         serializer = CategoryModelSerializer(data=request.data)
