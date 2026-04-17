@@ -1,5 +1,7 @@
-from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate
+from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from users.models import User
 
@@ -21,5 +23,51 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
-        # Token.objects.create(user=user)  
+        Token.objects.create(user=user)  
+        return user
+    
+
+# Login 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        user = authenticate(email=attrs['email'], password=attrs['password'])
+        if not user:
+            raise serializers.ValidationError("Неверный email или пароль")
+
+        token, _ = Token.objects.get_or_create(user=user)
+        return {"token": token.key, "email": user.email}
+    
+
+# Profile 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', "last_name", 'phone_number', "bio",
+                  "address", "avatar", "date_joined")
+        read_only_fields = ('email',) 
+
+
+# Change Password
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(
+        write_only=True, 
+        validators=[validate_password]
+    )
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        if not user.check_password(attrs['old_password']):
+            raise serializers.ValidationError(
+                "Старый пароль неверный")
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(
+            self.validated_data['new_password'])
+        user.save()
         return user
