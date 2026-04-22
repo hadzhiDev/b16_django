@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from users.models import User
+from users.models import User, PasswordResetOTP
 
 
 # Registration
@@ -71,3 +71,17 @@ class ChangePasswordSerializer(serializers.Serializer):
             self.validated_data['new_password'])
         user.save()
         return user
+    
+
+
+
+class RequestOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Пользователь с этим адресом электронной почты не найден."
+            )
+        return value
+

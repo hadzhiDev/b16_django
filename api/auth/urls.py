@@ -8,5 +8,8 @@ urlpatterns = [
     path("logout/", views.logout),
     path('delete-account/', views.delete_account),
     path("profile/", views.ProfileAPIView.as_view()),
-    path("change-password/", views.change_password)
+    path("change-password/", views.change_password),
+
+    path('request-otp/',    views.RequestOTPView.as_view(),    name='request-otp'),
+
 ]

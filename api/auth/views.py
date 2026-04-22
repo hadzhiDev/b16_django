@@ -4,11 +4,13 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework import status
+from rest_framework.views import APIView
 # from rest_framework.authtoken.models import Token
 
 from .serializers import (RegisterSerializer, LoginSerializer, UserProfileSerializer,
-                          ChangePasswordSerializer)
-from users.models import User
+                          ChangePasswordSerializer, RequestOTPSerializer, VerifyOTPSerializer, ResetPasswordSerializer)
+from users.models import User, PasswordResetOTP
+from users.utils import generate_otp, send_otp_email
 
 
 # Register
@@ -31,7 +33,7 @@ class RegisterAPIView(GenericAPIView):
 def login(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    return Response(serializer.validated_data)   # вернёт token, email
+    return Response(serializer.validated_data)   
 
 
 # Logout
@@ -72,3 +74,26 @@ def change_password(request):
     serializer.save()
     return Response({"message": "Пароль успешно изменён!"}, 
                     status=status.HTTP_200_OK)
+
+
+
+class RequestOTPView(APIView):
+    def post(self, request):
+        serializer = RequestOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        user = User.objects.get(email=email)
+
+        PasswordResetOTP.objects.filter(user=user, is_used=False).update(is_used=True)
+
+        otp = generate_otp(4)
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        send_otp_email(email, otp)
+
+        return Response(
+            {'message': 'Одноразовый пароль (OTP) будет отправлен на вашу электронную почту. Действителен в течение 5 минут.'},
+            status=status.HTTP_200_OK
+        )
+
