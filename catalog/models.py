@@ -20,8 +20,10 @@ class Category(models.Model):
 class Movie(models.Model):
     category = models.ForeignKey(
         Category,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="movies",
+        null=True,
+        blank=True
     )
     name = models.CharField(
         verbose_name='Название',
@@ -70,6 +72,7 @@ class Movie(models.Model):
         'Genre',
         blank=True,
         related_name='movies',
+        verbose_name='Жанры'
     )
     is_published = models.BooleanField(
         default=False
@@ -83,6 +86,18 @@ class Movie(models.Model):
     
     def __str__(self):
         return self.name
+    
+
+class MovieImage(models.Model):
+    image = models.ImageField(verbose_name='Картинка', upload_to='movie/images/')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='images')
+
+    class Meta:
+        verbose_name = 'Картинка фильма'
+        verbose_name_plural = 'Картинки фильма'
+
+    def __str__(self):
+        return f"Картинка для фильма: {self.movie.name}"
     
 
 class Genre(models.Model):

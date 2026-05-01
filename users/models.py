@@ -38,16 +38,24 @@ class User(AbstractUser):
 
 
 class PasswordResetOTP(models.Model):
+    PURPOSE_CHOICES = (
+        ("reset_password", "Сбросить пароль"),
+        ("register", "Регистрация"),
+    )
+
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE, 
-        related_name='reset_otps'
+        related_name='reset_otps',
+        null=True, blank=True
     )
+    email = models.EmailField(verbose_name="электронная почта", null=True, blank=True)
     otp = models.CharField(max_length=4)
     is_used = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+    purpose = models.CharField(max_length=20, default='password_reset')
 
     class Meta:
         verbose_name = 'Password Reset OTP'
@@ -63,3 +71,4 @@ class PasswordResetOTP(models.Model):
 
     def __str__(self):
         return f'{self.user.email} - {self.otp}'
+    

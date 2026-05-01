@@ -8,13 +8,32 @@ from rest_framework.generics import (
     UpdateAPIView, RetrieveUpdateDestroyAPIView
 )
 
-from .serializers import MovieModelSerializer, MovieSerializer, CategoryModelSerializer, GenreModelSerializer
+from .serializers import (
+    MovieModelSerializer, MovieCreateSerializer, MovieDetailSerializer,
+    CategoryModelSerializer, GenreModelSerializer
+)
 from catalog.models import Movie, Genre, Category
 
 
 class MovieListCreateAPIView(ListCreateAPIView):
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = MovieModelSerializer
+
+    def get_serializer_class(self):
+        print(self.request.method)
+        if self.request.method == "POST":
+            return MovieCreateSerializer
+        return MovieModelSerializer
+
+
+class MoviewRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieModelSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return MovieDetailSerializer
+        return MovieModelSerializer
 
 
 # @api_view(["GET", "POST"])
@@ -30,10 +49,6 @@ class MovieListCreateAPIView(ListCreateAPIView):
 #             return Response(serializer.data, status=201)
 #         print(serializer.errors)
 #         return Response(serializer.errors, status=400)
-
-class MoviewRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Movie.objects.all()
-    serializer_class = MovieModelSerializer
     
 
 @api_view(['GET', 'PUT', 'DELETE'])

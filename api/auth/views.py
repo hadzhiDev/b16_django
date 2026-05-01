@@ -8,15 +8,42 @@ from rest_framework.views import APIView
 # from rest_framework.authtoken.models import Token
 
 from .serializers import (RegisterSerializer, LoginSerializer, UserProfileSerializer,
-                          ChangePasswordSerializer, RequestOTPSerializer, VerifyOTPSerializer, ResetPasswordSerializer)
+                          ChangePasswordSerializer, RequestOTPSerializer, VerifyOTPSerializer, 
+                          ResetPasswordSerializer,
+                          RequestRegisterOTPSerializer)
 from users.models import User, PasswordResetOTP
 from users.utils import generate_otp, send_otp_email
 
 
-# Register
-# @permission_classes([AllowAny])
+class RequestRegisterOTPView(APIView):
+    def post(self, request):
+        serializer = RequestRegisterOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+
+        PasswordResetOTP.objects.filter(
+            email=email, is_used=False, 
+            purpose="register"
+        ).update(is_used=True)
+
+        otp = generate_otp(4)
+        PasswordResetOTP.objects.create(email=email, otp=otp, purpose="register")
+
+        subject = 'OTP-код для регистрации.'
+        message = f'''{otp} - это ваш 
+        одноразовый пароль для регистрации. Он действителен в течение 5 минут.'''
+
+        send_otp_email(email, otp, subject, message)
+
+        return Response(
+            {'message': 'Одноразовый пароль (OTP) будет отправлен на вашу электронную почту. Действителен в течение 5 минут.'},
+            status=status.HTTP_200_OK
+        )
+
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -85,15 +112,56 @@ class RequestOTPView(APIView):
         email = serializer.validated_data['email']
         user = User.objects.get(email=email)
 
-        PasswordResetOTP.objects.filter(user=user, is_used=False).update(is_used=True)
+        PasswordResetOTP.objects.filter(user=user, is_used=False, purpose="reset_password").update(is_used=True)
 
         otp = generate_otp(4)
-        PasswordResetOTP.objects.create(user=user, otp=otp)
+        PasswordResetOTP.objects.create(user=user, otp=otp, purpose="reset_password")
 
-        send_otp_email(email, otp)
+        subject = 'Сброс пароля с помощью OTP'
+        message = f'''{otp} - это ваш 
+        одноразовый пароль для сброса пароля. Он действителен в течение 5 минут.'''
+
+        send_otp_email(email, otp, subject, message)
 
         return Response(
             {'message': 'Одноразовый пароль (OTP) будет отправлен на вашу электронную почту. Действителен в течение 5 минут.'},
             status=status.HTTP_200_OK
         )
 
+
+class VerifyOTPView(APIView):
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        otp_obj = serializer.validated_data['otp_obj']
+        otp_obj.is_verified = True
+        otp_obj.save()
+
+        return Response(
+            {
+                'message': 'OTP-код успешно подтвержден.',
+                'reset_token': str(otp_obj.id),
+            },
+            status=status.HTTP_200_OK
+        )
+    
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data['user']
+        otp_obj = serializer.validated_data['otp_obj']
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+
+        otp_obj.is_used = True
+        otp_obj.save()
+
+        return Response(
+            {'message': 'Пароль успешно сброшен. Теперь вы можете войти в систему.'},
+            status=status.HTTP_200_OK
+        )
