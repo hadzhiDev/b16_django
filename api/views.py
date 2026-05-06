@@ -74,7 +74,6 @@ def movie_detail(request, pk):
         return Response(status=204)
     
 
-
 @api_view(["GET", "POST"])
 def categories_list(request):
     if request.method == "GET":

@@ -22,6 +22,12 @@ class MovieImageSerializer(ModelSerializer):
         fields = ("id", "image")
 
 
+class MovieSerializer(ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = "__all__"
+
+
 class MovieModelSerializer(ModelSerializer):
     genres = GenreModelSerializer(many=True, read_only=True)
     # images = MovieImageSerializer(many=True, read_only=True)
